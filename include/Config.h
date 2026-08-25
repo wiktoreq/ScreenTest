@@ -34,23 +34,23 @@ constexpr uint16_t KNOB_CHROMA    = 0xF81F; // magenta key, unused in the UI
 constexpr int16_t VALUE_SPRITE_W  = 56;     // fits "100%" in font 4
 constexpr int16_t VALUE_SPRITE_H  = 26;
 
-// Palette (RGB565). Hex comments are the intended 24-bit colors.
-constexpr uint16_t COLOR_BG           = 0x10C4; // #121820
-constexpr uint16_t COLOR_SURFACE      = 0x1947; // #1E2838
-constexpr uint16_t COLOR_TAB_IDLE     = 0x31EA; // #323C50
-constexpr uint16_t COLOR_TAB_ACTIVE   = 0x0C4F; // #0A8A7A
-constexpr uint16_t COLOR_ACCENT       = 0x2719; // #20E0C8
-constexpr uint16_t COLOR_TEXT         = 0xFFFF; // #FFFFFF
-constexpr uint16_t COLOR_TEXT_DIM     = 0x9D36; // #9AA4B0
-constexpr uint16_t COLOR_TRACK        = 0x3A2B; // #3A4658
+// Palette (RGB565) — dark, restrained scheme from the product colors.
+constexpr uint16_t COLOR_BG           = 0x0084; // #041322
+constexpr uint16_t COLOR_SURFACE      = 0x1926; // #1B2431
+constexpr uint16_t COLOR_TAB_IDLE     = 0x0084; // #041322
+constexpr uint16_t COLOR_TAB_ACTIVE   = 0x1926; // #1B2431
+constexpr uint16_t COLOR_ACCENT       = 0xFFDE; // #F8F6F1
+constexpr uint16_t COLOR_TEXT         = 0xFFDE; // #F8F6F1
+constexpr uint16_t COLOR_TEXT_DIM     = 0xAD76; // #A9ACB6
+constexpr uint16_t COLOR_TRACK        = 0x636F; // #646D7E
 constexpr uint16_t COLOR_KNOB         = 0xFFFF; // #FFFFFF
-constexpr uint16_t COLOR_SEPARATOR    = 0x10C4; // #121820
+constexpr uint16_t COLOR_SEPARATOR    = 0x0084; // #041322
 
-constexpr uint16_t COLOR_SCREEN_FILL  = 0xFD84; // #FFB020
-constexpr uint16_t COLOR_LIGHT_FILL   = 0x45BF; // #40B0FF
+constexpr uint16_t COLOR_SCREEN_FILL  = 0xFFDE; // #F8F6F1
+constexpr uint16_t COLOR_LIGHT_FILL   = 0xAD76; // #A9ACB6
 
-constexpr uint16_t COLOR_BTN_CONTRACT         = 0xD305; // #D06028
-constexpr uint16_t COLOR_BTN_CONTRACT_PRESSED = 0xFE90; // #FFD080
-constexpr uint16_t COLOR_BTN_RETRACT          = 0x23D9; // #2078C8
-constexpr uint16_t COLOR_BTN_RETRACT_PRESSED  = 0x96BF; // #90D0FF
-constexpr uint16_t COLOR_BTN_BORDER           = 0x8CB4; // #8A94A0
+constexpr uint16_t COLOR_BTN_CONTRACT         = 0x1926; // #1B2431
+constexpr uint16_t COLOR_BTN_CONTRACT_PRESSED = 0xFFDE; // #F8F6F1
+constexpr uint16_t COLOR_BTN_RETRACT          = 0x636F; // #646D7E
+constexpr uint16_t COLOR_BTN_RETRACT_PRESSED  = 0xFFDE; // #F8F6F1
+constexpr uint16_t COLOR_BTN_BORDER           = 0xAD76; // #A9ACB6

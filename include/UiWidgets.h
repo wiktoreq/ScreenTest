@@ -39,7 +39,7 @@ struct TouchButton {
 
 class UiWidgets {
 public:
-    // Allocates the shared slider-strip and percent sprites (call once from setup).
+    // Allocates knob, percent, and button sprites (call once from setup).
     static void init(TFT_eSPI* tft);
 
     // Returns true when a point lies inside the given rectangle.
@@ -63,25 +63,29 @@ public:
     // Draws the static track and fill (no knob) as part of the screen chrome.
     static void drawStaticTrack(TFT_eSPI* tft, const HorizontalSlider& slider);
 
-    // Blits the knob (and, on a drag, the dirty track under it) from a RAM sprite.
-    static void pushSlider(const HorizontalSlider& slider, bool fullBlit);
+    // Blits the 34x34 knob sprite at the current slider value.
+    static void pushKnob(const HorizontalSlider& slider);
 
-    // Blits the percent readout from a sprite over the reserved value slot.
+    // Moves the knob with object-sized blits: restore old hole, update fill, push knob.
+    static void updateSlider(const HorizontalSlider& slider);
+
+    // Blits the percent text from a sprite sized to the readout.
     static void pushValue(const HorizontalSlider& slider);
 
     // Maps a touch X to 0-100 on the given slider; returns true when the value changed.
     static bool handleSliderTouch(HorizontalSlider& slider, int16_t touchX);
 
-    // Paints a large rounded hold-button with optional chevron icon.
-    static void drawButton(TFT_eSPI* tft, const TouchButton& btn);
+    // Blits one hold-button from a sprite sized to the button.
+    static void pushButton(const TouchButton& btn);
 
     // Returns true when a point is inside the button bounds.
     static bool buttonContains(const TouchButton& btn, int16_t x, int16_t y);
 
 private:
     static TFT_eSPI* display;
-    static TFT_eSprite* sliderSprite;
+    static TFT_eSprite* knobSprite;
     static TFT_eSprite* valueSprite;
+    static TFT_eSprite* buttonSprite;
 
     // Creates one 16-bit sprite or halts if RAM cannot be allocated.
     static TFT_eSprite* createSprite(int16_t width, int16_t height, const char* name);
@@ -89,6 +93,9 @@ private:
     // Converts a 0-100 slider value to the knob's screen-center X.
     static int16_t knobCenterX(const HorizontalSlider& slider, uint8_t value);
 
-    // Restores the sprite drawing window after a cropped pushSprite.
-    static void resetSpriteWindow();
+    // Pushes a 34x34 track/fill patch over the previous knob position.
+    static void restoreOldKnob(const HorizontalSlider& slider);
+
+    // Paints only the fill segment that changed between oldValue and value.
+    static void updateFillDelta(const HorizontalSlider& slider);
 };

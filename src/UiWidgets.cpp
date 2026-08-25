@@ -3,8 +3,9 @@
 #include <Arduino.h>
 
 TFT_eSPI* UiWidgets::display = nullptr;
-TFT_eSprite* UiWidgets::sliderSprite = nullptr;
+TFT_eSprite* UiWidgets::knobSprite = nullptr;
 TFT_eSprite* UiWidgets::valueSprite = nullptr;
+TFT_eSprite* UiWidgets::buttonSprite = nullptr;
 
 // Creates one 16-bit sprite or halts if RAM cannot be allocated.
 TFT_eSprite* UiWidgets::createSprite(int16_t width, int16_t height, const char* name) {
@@ -24,19 +25,15 @@ int16_t UiWidgets::knobCenterX(const HorizontalSlider& slider, uint8_t value) {
     return slider.trackX + map(value, 0, 100, 0, slider.trackW);
 }
 
-// Restores the sprite drawing window after a cropped pushSprite.
-void UiWidgets::resetSpriteWindow() {
-    sliderSprite->setWindow(0, 0, SLIDER_STRIP_W - 1, SLIDER_STRIP_H - 1);
-}
-
-// Allocates the shared slider-strip and percent sprites (call once from setup).
+// Allocates knob, percent, and button sprites (call once from setup).
 void UiWidgets::init(TFT_eSPI* tft) {
     if (display != nullptr) {
         return;
     }
     display = tft;
-    sliderSprite = createSprite(SLIDER_STRIP_W, SLIDER_STRIP_H, "slider");
+    knobSprite = createSprite(KNOB_SPRITE, KNOB_SPRITE, "knob");
     valueSprite = createSprite(VALUE_SPRITE_W, VALUE_SPRITE_H, "value");
+    buttonSprite = createSprite(ACT_BTN_W, ACT_BTN_H, "button");
 }
 
 // Returns true when a point lies inside the given rectangle.
@@ -104,72 +101,80 @@ void UiWidgets::drawStaticTrack(TFT_eSPI* tft, const HorizontalSlider& slider) {
     }
 }
 
-// Blits the knob (and, on a drag, the dirty track under it) from a RAM sprite.
-void UiWidgets::pushSlider(const HorizontalSlider& slider, bool fullBlit) {
-    const int16_t newX = knobCenterX(slider, slider.value);
+// Blits the 34x34 knob sprite at the current slider value.
+void UiWidgets::pushKnob(const HorizontalSlider& slider) {
+    const int16_t cx = slider.knobRadius + 1;
+    const int16_t cy = slider.knobRadius + 1;
+
+    knobSprite->fillSprite(KNOB_CHROMA);
+    knobSprite->fillCircle(cx, cy, slider.knobRadius, COLOR_KNOB);
+    knobSprite->drawCircle(cx, cy, slider.knobRadius, slider.fillColor);
+    knobSprite->fillCircle(cx, cy, 6, slider.fillColor);
+
+    const int16_t screenX = knobCenterX(slider, slider.value) - cx;
+    const int16_t screenY = slider.trackY + (slider.trackH / 2) - cy;
+    knobSprite->pushSprite(screenX, screenY, KNOB_CHROMA);
+}
+
+// Pushes a 34x34 track/fill patch over the previous knob position.
+void UiWidgets::restoreOldKnob(const HorizontalSlider& slider) {
+    const int16_t size = KNOB_SPRITE;
     const int16_t oldX = knobCenterX(slider, slider.oldValue);
-    const int16_t pad = slider.knobRadius + 1;
+    const int16_t spriteX = oldX - slider.knobRadius - 1;
+    const int16_t spriteY = slider.trackY + (slider.trackH / 2) - slider.knobRadius - 1;
+    const int16_t trackY = (size - slider.trackH) / 2;
+    const int16_t trackInSpriteX = slider.trackX - spriteX;
 
-    int16_t left;
-    int16_t right;
-    if (fullBlit) {
-        left = slider.trackX - pad;
-        right = slider.trackX + slider.trackW + pad;
-    } else {
-        left = min(oldX, newX) - pad;
-        right = max(oldX, newX) + pad;
-    }
-
-    int16_t width = right - left;
-    if (width < KNOB_SPRITE) {
-        width = KNOB_SPRITE;
-        left = newX - pad;
-        right = left + width;
-    }
-    if (width > SLIDER_STRIP_W) {
-        width = SLIDER_STRIP_W;
-        left = slider.trackX - pad;
-    }
-
-    const int16_t height = SLIDER_STRIP_H;
-    const int16_t trackY = (height - slider.trackH) / 2;
-    const int16_t trackInX = slider.trackX - left;
-
-    resetSpriteWindow();
-    sliderSprite->fillRect(0, 0, width, height, COLOR_SURFACE);
-    sliderSprite->fillRect(trackInX, trackY, slider.trackW, slider.trackH, COLOR_TRACK);
+    knobSprite->fillSprite(COLOR_SURFACE);
+    knobSprite->fillRect(trackInSpriteX, trackY, slider.trackW, slider.trackH, COLOR_TRACK);
 
     int16_t fillW = map(slider.value, 0, 100, 0, slider.trackW);
     if (fillW < slider.trackH) {
         fillW = (slider.value == 0) ? 0 : slider.trackH;
     }
     if (fillW > 0) {
-        sliderSprite->fillRect(trackInX, trackY, fillW, slider.trackH, slider.fillColor);
+        knobSprite->fillRect(trackInSpriteX, trackY, fillW, slider.trackH, slider.fillColor);
     }
 
-    const int16_t knobX = newX - left;
-    const int16_t knobY = height / 2;
-    sliderSprite->fillCircle(knobX, knobY, slider.knobRadius, COLOR_KNOB);
-    sliderSprite->drawCircle(knobX, knobY, slider.knobRadius, slider.fillColor);
-    sliderSprite->fillCircle(knobX, knobY, 6, slider.fillColor);
-
-    const int16_t screenY = slider.trackY + (slider.trackH / 2) - (height / 2);
-    sliderSprite->pushSprite(left, screenY, 0, 0, width, height);
-    resetSpriteWindow();
+    knobSprite->pushSprite(spriteX, spriteY);
 }
 
-// Blits the percent readout from a sprite over the reserved value slot.
+// Paints only the fill segment that changed between oldValue and value.
+void UiWidgets::updateFillDelta(const HorizontalSlider& slider) {
+    const int16_t oldFillX = knobCenterX(slider, slider.oldValue);
+    const int16_t newFillX = knobCenterX(slider, slider.value);
+    if (oldFillX == newFillX) {
+        return;
+    }
+
+    if (newFillX > oldFillX) {
+        display->fillRect(oldFillX, slider.trackY, newFillX - oldFillX, slider.trackH,
+                          slider.fillColor);
+    } else {
+        display->fillRect(newFillX, slider.trackY, oldFillX - newFillX, slider.trackH,
+                          COLOR_TRACK);
+    }
+}
+
+// Moves the knob with object-sized blits: restore old hole, update fill, push knob.
+void UiWidgets::updateSlider(const HorizontalSlider& slider) {
+    restoreOldKnob(slider);
+    updateFillDelta(slider);
+    pushKnob(slider);
+}
+
+// Blits the percent text from a sprite sized to the readout.
 void UiWidgets::pushValue(const HorizontalSlider& slider) {
     char valBuf[8];
-    snprintf(valBuf, sizeof(valBuf), "%3d%%", slider.value);
+    snprintf(valBuf, sizeof(valBuf), "%d%%", slider.value);
 
     valueSprite->fillSprite(COLOR_SURFACE);
-    valueSprite->setTextDatum(TR_DATUM);
+    valueSprite->setTextDatum(MC_DATUM);
     valueSprite->setTextColor(COLOR_TEXT, COLOR_SURFACE);
-    valueSprite->drawString(valBuf, VALUE_SPRITE_W - 2, 4, 4);
+    valueSprite->drawString(valBuf, VALUE_SPRITE_W / 2, VALUE_SPRITE_H / 2, 4);
 
     const int16_t screenX = slider.cardX + slider.cardW - 14 - VALUE_SPRITE_W;
-    const int16_t screenY = slider.cardY + 10;
+    const int16_t screenY = slider.cardY + 12;
     valueSprite->pushSprite(screenX, screenY);
 }
 
@@ -187,32 +192,34 @@ bool UiWidgets::handleSliderTouch(HorizontalSlider& slider, int16_t touchX) {
     return true;
 }
 
-// Paints a large rounded hold-button with optional chevron icon.
-void UiWidgets::drawButton(TFT_eSPI* tft, const TouchButton& btn) {
+// Blits one hold-button from a sprite sized to the button.
+void UiWidgets::pushButton(const TouchButton& btn) {
     const uint16_t bg = btn.pressed ? btn.pressedColor : btn.color;
     const uint16_t fg = btn.pressed ? COLOR_BG : COLOR_TEXT;
+    const int16_t cx = btn.w / 2;
+    const int16_t cy = (btn.h / 2) - 16;
 
-    tft->fillRoundRect(btn.x, btn.y, btn.w, btn.h, BTN_RADIUS, bg);
-    tft->drawRoundRect(btn.x, btn.y, btn.w, btn.h, BTN_RADIUS, COLOR_BTN_BORDER);
+    buttonSprite->fillSprite(COLOR_BG);
+    buttonSprite->fillRoundRect(0, 0, btn.w, btn.h, BTN_RADIUS, bg);
+    buttonSprite->drawRoundRect(0, 0, btn.w, btn.h, BTN_RADIUS, COLOR_BTN_BORDER);
 
     if (btn.pressed) {
-        tft->drawRoundRect(btn.x + 3, btn.y + 3, btn.w - 6, btn.h - 6, BTN_RADIUS - 2, fg);
+        buttonSprite->drawRoundRect(3, 3, btn.w - 6, btn.h - 6, BTN_RADIUS - 2, fg);
     }
-
-    const int16_t cx = btn.x + (btn.w / 2);
-    const int16_t cy = btn.y + (btn.h / 2) - 16;
 
     if (btn.icon == ICON_DOWN) {
-        tft->fillTriangle(cx - 24, cy - 16, cx + 24, cy - 16, cx, cy + 12, fg);
+        buttonSprite->fillTriangle(cx - 24, cy - 16, cx + 24, cy - 16, cx, cy + 12, fg);
     } else if (btn.icon == ICON_UP) {
-        tft->fillTriangle(cx - 24, cy + 12, cx + 24, cy + 12, cx, cy - 16, fg);
+        buttonSprite->fillTriangle(cx - 24, cy + 12, cx + 24, cy + 12, cx, cy - 16, fg);
     }
 
-    tft->loadFont(consolab24);
-    tft->setTextDatum(MC_DATUM);
-    tft->setTextColor(fg, bg);
-    tft->drawString(btn.label, cx, btn.y + btn.h - 32);
-    tft->unloadFont();
+    buttonSprite->loadFont(consolab24);
+    buttonSprite->setTextDatum(MC_DATUM);
+    buttonSprite->setTextColor(fg, bg);
+    buttonSprite->drawString(btn.label, cx, btn.h - 32);
+    buttonSprite->unloadFont();
+
+    buttonSprite->pushSprite(btn.x, btn.y);
 }
 
 // Returns true when a point is inside the button bounds.

@@ -69,9 +69,9 @@ void MainMenu::draw() {
     UiWidgets::clearContent(tft);
     drawBrightnessChrome(screenSlider, true);
     drawBrightnessChrome(lightSlider, false);
-    UiWidgets::pushSlider(screenSlider, false);
+    UiWidgets::pushKnob(screenSlider);
     UiWidgets::pushValue(screenSlider);
-    UiWidgets::pushSlider(lightSlider, false);
+    UiWidgets::pushKnob(lightSlider);
     UiWidgets::pushValue(lightSlider);
 }
 
@@ -91,7 +91,7 @@ void MainMenu::handleTouch(int16_t touchX, int16_t touchY) {
 
     HorizontalSlider* slider = (dragTarget == DRAG_SCREEN) ? &screenSlider : &lightSlider;
     if (UiWidgets::handleSliderTouch(*slider, touchX)) {
-        UiWidgets::pushSlider(*slider, false);
+        UiWidgets::updateSlider(*slider);
         UiWidgets::pushValue(*slider);
     }
 }

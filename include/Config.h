@@ -28,9 +28,10 @@ constexpr int16_t ACT_BTN_Y         = CONTENT_Y + PAD + ACT_SLIDER_CARD_H + GAP;
 constexpr int16_t ACT_BTN_H         = (CONTENT_Y + CONTENT_H) - PAD - ACT_BTN_Y;
 constexpr int16_t ACT_BTN_W         = (TFT_W - PAD * 2 - GAP) / 2;
 
-// Sprite sizes for flicker-free slider and percent updates
-constexpr int16_t SLIDER_SPRITE_W = 452; // track (420) + knob overhang (2*16)
-constexpr int16_t SLIDER_SPRITE_H = (SLIDER_KNOB_R * 2) + 4;
+// Sprite sizes: a slider strip (dirty-rect blits) plus percent text
+constexpr int16_t KNOB_SPRITE     = (SLIDER_KNOB_R * 2) + 2;
+constexpr int16_t SLIDER_STRIP_W  = 452; // track (420) + knob overhang
+constexpr int16_t SLIDER_STRIP_H  = KNOB_SPRITE;
 constexpr int16_t VALUE_SPRITE_W  = 72;
 constexpr int16_t VALUE_SPRITE_H  = 32;
 

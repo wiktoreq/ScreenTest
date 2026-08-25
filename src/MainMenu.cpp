@@ -38,8 +38,8 @@ void MainMenu::layoutSliders() {
     lightSlider.fillColor = COLOR_LIGHT_FILL;
 }
 
-// Paints one brightness card including icon, title, and slider.
-void MainMenu::drawBrightnessCard(const HorizontalSlider& slider, bool isScreen) {
+// Paints one brightness card's static chrome (card, icon, title).
+void MainMenu::drawBrightnessChrome(const HorizontalSlider& slider, bool isScreen) {
     UiWidgets::drawCard(tft, slider.cardX, slider.cardY, slider.cardW, slider.cardH);
 
     const int16_t iconX = slider.cardX + 24;
@@ -50,7 +50,7 @@ void MainMenu::drawBrightnessCard(const HorizontalSlider& slider, bool isScreen)
         UiWidgets::drawLampIcon(tft, iconX, iconY, COLOR_LIGHT_FILL);
     }
 
-    UiWidgets::drawSlider(tft, slider, true);
+    UiWidgets::drawSliderLabel(tft, slider);
 }
 
 // Sets default brightness values and card layout.
@@ -66,8 +66,12 @@ void MainMenu::init() {
 // Draws both brightness cards into the content area.
 void MainMenu::draw() {
     UiWidgets::clearContent(tft);
-    drawBrightnessCard(screenSlider, true);
-    drawBrightnessCard(lightSlider, false);
+    drawBrightnessChrome(screenSlider, true);
+    drawBrightnessChrome(lightSlider, false);
+    UiWidgets::pushSlider(screenSlider);
+    UiWidgets::pushValue(screenSlider);
+    UiWidgets::pushSlider(lightSlider);
+    UiWidgets::pushValue(lightSlider);
 }
 
 // Drags the screen or external-light slider from a content-area touch.
@@ -86,7 +90,8 @@ void MainMenu::handleTouch(int16_t touchX, int16_t touchY) {
 
     HorizontalSlider* slider = (dragTarget == DRAG_SCREEN) ? &screenSlider : &lightSlider;
     if (UiWidgets::handleSliderTouch(*slider, touchX)) {
-        UiWidgets::drawSlider(tft, *slider, false);
+        UiWidgets::pushSlider(*slider);
+        UiWidgets::pushValue(*slider);
     }
 }
 

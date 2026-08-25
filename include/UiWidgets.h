@@ -39,6 +39,9 @@ struct TouchButton {
 
 class UiWidgets {
 public:
+    // Allocates the shared slider and percent sprites (call once from setup).
+    static void init(TFT_eSPI* tft);
+
     // Returns true when a point lies inside the given rectangle.
     static bool hitTest(int16_t x, int16_t y, int16_t rx, int16_t ry, int16_t rw, int16_t rh);
 
@@ -54,8 +57,14 @@ public:
     // Draws a small lamp glyph used as the external-light icon.
     static void drawLampIcon(TFT_eSPI* tft, int16_t cx, int16_t cy, uint16_t color);
 
-    // Paints the slider track, fill, knob, and percent readout.
-    static void drawSlider(TFT_eSPI* tft, const HorizontalSlider& slider, bool drawChrome);
+    // Draws the static slider title; the moving track is blitted separately.
+    static void drawSliderLabel(TFT_eSPI* tft, const HorizontalSlider& slider);
+
+    // Blits the slider track, fill, and knob from a sprite (no background redraw).
+    static void pushSlider(const HorizontalSlider& slider);
+
+    // Blits the percent readout from a sprite over the reserved value slot.
+    static void pushValue(const HorizontalSlider& slider);
 
     // Maps a touch X to 0-100 on the given slider; returns true when the value changed.
     static bool handleSliderTouch(HorizontalSlider& slider, int16_t touchX);
@@ -65,4 +74,12 @@ public:
 
     // Returns true when a point is inside the button bounds.
     static bool buttonContains(const TouchButton& btn, int16_t x, int16_t y);
+
+private:
+    static TFT_eSPI* display;
+    static TFT_eSprite* sliderSprite;
+    static TFT_eSprite* valueSprite;
+
+    // Creates one 16-bit sprite or halts if RAM cannot be allocated.
+    static TFT_eSprite* createSprite(int16_t width, int16_t height, const char* name);
 };

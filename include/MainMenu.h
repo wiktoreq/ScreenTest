@@ -19,8 +19,8 @@ private:
     // Fills slider geometry for the two stacked brightness cards.
     void layoutSliders();
 
-    // Paints one brightness card including icon, title, and slider.
-    void drawBrightnessCard(const HorizontalSlider& slider, bool isScreen);
+    // Paints one brightness card's static chrome (card, icon, title).
+    void drawBrightnessChrome(const HorizontalSlider& slider, bool isScreen);
 
 public:
     // Binds this menu to the shared TFT driver.

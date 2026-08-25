@@ -2,6 +2,33 @@
 #include "consolab24.h"
 #include <Arduino.h>
 
+TFT_eSPI* UiWidgets::display = nullptr;
+TFT_eSprite* UiWidgets::sliderSprite = nullptr;
+TFT_eSprite* UiWidgets::valueSprite = nullptr;
+
+// Creates one 16-bit sprite or halts if RAM cannot be allocated.
+TFT_eSprite* UiWidgets::createSprite(int16_t width, int16_t height, const char* name) {
+    TFT_eSprite* sprite = new TFT_eSprite(display);
+    sprite->setColorDepth(16);
+    if (!sprite->createSprite(width, height)) {
+        Serial.printf("Error: not enough RAM for %s sprite (%dx%d)\n", name, width, height);
+        while (true) {
+            delay(100);
+        }
+    }
+    return sprite;
+}
+
+// Allocates the shared slider and percent sprites (call once from setup).
+void UiWidgets::init(TFT_eSPI* tft) {
+    if (display != nullptr) {
+        return;
+    }
+    display = tft;
+    sliderSprite = createSprite(SLIDER_SPRITE_W, SLIDER_SPRITE_H, "slider");
+    valueSprite = createSprite(VALUE_SPRITE_W, VALUE_SPRITE_H, "value");
+}
+
 // Returns true when a point lies inside the given rectangle.
 bool UiWidgets::hitTest(int16_t x, int16_t y, int16_t rx, int16_t ry, int16_t rw, int16_t rh) {
     return (x >= rx && x < (rx + rw) && y >= ry && y < (ry + rh));
@@ -39,53 +66,62 @@ void UiWidgets::drawLampIcon(TFT_eSPI* tft, int16_t cx, int16_t cy, uint16_t col
     tft->drawFastHLine(cx - 6, cy + 13, 12, color);
 }
 
-// Paints the slider track, fill, knob, and percent readout.
-void UiWidgets::drawSlider(TFT_eSPI* tft, const HorizontalSlider& slider, bool drawChrome) {
-    const int16_t knobCy = slider.trackY + (slider.trackH / 2);
-    const int16_t bandY = knobCy - slider.knobRadius - 1;
-    const int16_t bandH = (slider.knobRadius * 2) + 2;
+// Draws the static slider title; the moving track is blitted separately.
+void UiWidgets::drawSliderLabel(TFT_eSPI* tft, const HorizontalSlider& slider) {
+    if (slider.label == nullptr) {
+        return;
+    }
+    tft->loadFont(consolab24);
+    tft->setTextDatum(TL_DATUM);
+    tft->setTextColor(COLOR_TEXT, COLOR_SURFACE);
+    tft->drawString(slider.label, slider.labelX, slider.cardY + 12);
+    tft->unloadFont();
+}
 
-    // Erase the previous knob/track strip so movement does not leave trails
-    tft->fillRect(slider.trackX - slider.knobRadius, bandY,
-                  slider.trackW + (slider.knobRadius * 2), bandH,
-                  COLOR_SURFACE);
-
+// Blits the slider track, fill, and knob from a sprite (no background redraw).
+void UiWidgets::pushSlider(const HorizontalSlider& slider) {
+    const int16_t spriteH = SLIDER_SPRITE_H;
+    const int16_t trackX = slider.knobRadius;
+    const int16_t trackY = (spriteH - slider.trackH) / 2;
     const int16_t radius = slider.trackH / 2;
-    tft->fillRoundRect(slider.trackX, slider.trackY, slider.trackW, slider.trackH,
-                       radius, COLOR_TRACK);
+
+    sliderSprite->fillSprite(COLOR_SURFACE);
+    sliderSprite->fillRoundRect(trackX, trackY, slider.trackW, slider.trackH, radius, COLOR_TRACK);
 
     int16_t fillW = map(slider.value, 0, 100, 0, slider.trackW);
     if (fillW < slider.trackH) {
         fillW = (slider.value == 0) ? 0 : slider.trackH;
     }
     if (fillW > 0) {
-        tft->fillRoundRect(slider.trackX, slider.trackY, fillW, slider.trackH,
-                           radius, slider.fillColor);
+        sliderSprite->fillRoundRect(trackX, trackY, fillW, slider.trackH, radius, slider.fillColor);
     }
 
-    int16_t knobX = slider.trackX + map(slider.value, 0, 100, 0, slider.trackW);
-    knobX = constrain(knobX, slider.trackX, slider.trackX + slider.trackW);
+    int16_t knobX = trackX + map(slider.value, 0, 100, 0, slider.trackW);
+    knobX = constrain(knobX, trackX, trackX + slider.trackW);
+    const int16_t knobY = spriteH / 2;
 
-    tft->fillCircle(knobX, knobCy, slider.knobRadius, COLOR_KNOB);
-    tft->drawCircle(knobX, knobCy, slider.knobRadius, slider.fillColor);
-    tft->fillCircle(knobX, knobCy, 6, slider.fillColor);
+    sliderSprite->fillCircle(knobX, knobY, slider.knobRadius, COLOR_KNOB);
+    sliderSprite->drawCircle(knobX, knobY, slider.knobRadius, slider.fillColor);
+    sliderSprite->fillCircle(knobX, knobY, 6, slider.fillColor);
 
+    const int16_t screenX = slider.trackX - slider.knobRadius;
+    const int16_t screenY = slider.trackY + (slider.trackH / 2) - (spriteH / 2);
+    sliderSprite->pushSprite(screenX, screenY);
+}
+
+// Blits the percent readout from a sprite over the reserved value slot.
+void UiWidgets::pushValue(const HorizontalSlider& slider) {
     char valBuf[8];
     snprintf(valBuf, sizeof(valBuf), "%3d%%", slider.value);
 
-    tft->setTextDatum(TR_DATUM);
-    tft->setTextColor(COLOR_TEXT, COLOR_SURFACE);
-    tft->setTextPadding(56);
-    tft->drawString(valBuf, slider.cardX + slider.cardW - 14, slider.cardY + 14, 4);
-    tft->setTextPadding(0);
+    valueSprite->fillSprite(COLOR_SURFACE);
+    valueSprite->setTextDatum(TR_DATUM);
+    valueSprite->setTextColor(COLOR_TEXT, COLOR_SURFACE);
+    valueSprite->drawString(valBuf, VALUE_SPRITE_W - 2, 4, 4);
 
-    if (drawChrome && slider.label != nullptr) {
-        tft->loadFont(consolab24);
-        tft->setTextDatum(TL_DATUM);
-        tft->setTextColor(COLOR_TEXT, COLOR_SURFACE);
-        tft->drawString(slider.label, slider.labelX, slider.cardY + 12);
-        tft->unloadFont();
-    }
+    const int16_t screenX = slider.cardX + slider.cardW - 14 - VALUE_SPRITE_W;
+    const int16_t screenY = slider.cardY + 10;
+    valueSprite->pushSprite(screenX, screenY);
 }
 
 // Maps a touch X to 0-100 on the given slider; returns true when the value changed.

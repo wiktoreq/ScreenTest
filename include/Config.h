@@ -28,6 +28,12 @@ constexpr int16_t ACT_BTN_Y         = CONTENT_Y + PAD + ACT_SLIDER_CARD_H + GAP;
 constexpr int16_t ACT_BTN_H         = (CONTENT_Y + CONTENT_H) - PAD - ACT_BTN_Y;
 constexpr int16_t ACT_BTN_W         = (TFT_W - PAD * 2 - GAP) / 2;
 
+// Sprite sizes for flicker-free slider and percent updates
+constexpr int16_t SLIDER_SPRITE_W = 452; // track (420) + knob overhang (2*16)
+constexpr int16_t SLIDER_SPRITE_H = (SLIDER_KNOB_R * 2) + 4;
+constexpr int16_t VALUE_SPRITE_W  = 72;
+constexpr int16_t VALUE_SPRITE_H  = 32;
+
 // Palette (RGB565). Hex comments are the intended 24-bit colors.
 constexpr uint16_t COLOR_BG           = 0x10C4; // #121820
 constexpr uint16_t COLOR_SURFACE      = 0x1947; // #1E2838

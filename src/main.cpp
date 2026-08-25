@@ -5,6 +5,7 @@
 #include "SPIFFS.h"
 
 #include "Config.h"
+#include "UiWidgets.h"
 #include "TopMenu.h"
 #include "MainMenu.h"
 #include "ActuatorMenu.h"
@@ -135,6 +136,8 @@ void setup() {
     tft.init();
     tft.setRotation(3);
     tft.fillScreen(COLOR_BG);
+
+    UiWidgets::init(&tft);
 
     if (REPEAT_CAL) {
         touch_calibrate();

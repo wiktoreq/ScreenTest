@@ -6,21 +6,22 @@
   <title>480x320 Touchscreen UI Preview</title>
   <style>
     :root {
-      --bg: #041322;
-      --surface: #1b2431;
-      --tab-idle: #041322;
-      --tab-active: #1b2431;
-      --accent: #f8f6f1;
-      --text: #f8f6f1;
-      --text-dim: #a9acb6;
-      --track: #646d7e;
-      --screen-fill: #f8f6f1;
-      --light-fill: #a9acb6;
-      --btn-contract: #1b2431;
-      --btn-contract-pressed: #f8f6f1;
-      --btn-retract: #646d7e;
-      --btn-retract-pressed: #f8f6f1;
-      --btn-border: #a9acb6;
+      --bg: #f8f6f1;
+      --surface: #ffffff;
+      --tab-idle: #f8f6f1;
+      --tab-active: #ffffff;
+      --accent: #041322;
+      --text: #041322;
+      --text-dim: #646d7e;
+      --on-dark: #f8f6f1;
+      --track: #a9acb6;
+      --screen-fill: #041322;
+      --light-fill: #646d7e;
+      --btn-contract: #041322;
+      --btn-contract-pressed: #a9acb6;
+      --btn-retract: #1b2431;
+      --btn-retract-pressed: #a9acb6;
+      --btn-border: #646d7e;
     }
 
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -33,12 +34,12 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
-      background: #041322;
-      color: #a9acb6;
+      background: #a9acb6;
+      color: #1b2431;
       font-family: Consolas, "Courier New", monospace;
     }
 
-    h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.16em; color: #a9acb6; margin: 0; }
+    h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.16em; color: #1b2431; margin: 0; }
 
     #device {
       width: 480px;
@@ -46,7 +47,7 @@
       background: var(--bg);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 12px 40px rgba(4, 19, 34, 0.18);
       border: 8px solid #1b2431;
       border-radius: 6px;
     }
@@ -215,7 +216,7 @@
       height: 149px;
       border-radius: 12px;
       border: 1px solid var(--btn-border);
-      color: var(--text);
+      color: var(--on-dark);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -238,7 +239,7 @@
     }
 
     .hold-btn.contract .chevron {
-      border-top: 28px solid var(--text);
+      border-top: 28px solid var(--on-dark);
     }
 
     .hold-btn.retract {
@@ -247,24 +248,24 @@
     }
 
     .hold-btn.retract .chevron {
-      border-bottom: 28px solid var(--text);
+      border-bottom: 28px solid var(--on-dark);
     }
 
     .hold-btn.contract.pressed {
       background: var(--btn-contract-pressed);
-      color: var(--bg);
-      box-shadow: inset 0 0 0 3px var(--bg);
+      color: var(--text);
+      box-shadow: inset 0 0 0 3px var(--text);
     }
 
-    .hold-btn.contract.pressed .chevron { border-top-color: var(--bg); }
+    .hold-btn.contract.pressed .chevron { border-top-color: var(--text); }
 
     .hold-btn.retract.pressed {
       background: var(--btn-retract-pressed);
-      color: var(--bg);
-      box-shadow: inset 0 0 0 3px var(--bg);
+      color: var(--text);
+      box-shadow: inset 0 0 0 3px var(--text);
     }
 
-    .hold-btn.retract.pressed .chevron { border-bottom-color: var(--bg); }
+    .hold-btn.retract.pressed .chevron { border-bottom-color: var(--text); }
   </style>
 </head>
 <body>

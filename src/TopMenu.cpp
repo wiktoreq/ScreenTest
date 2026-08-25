@@ -31,7 +31,8 @@ void TopMenu::draw() {
             tft->drawFastVLine(xPos, 8, MENU_HEIGHT - 16, COLOR_TRACK);
         }
 
-        tft->setTextColor(COLOR_TEXT, tabColor);
+        const uint16_t labelColor = (i == (size_t)activeTabIndex) ? COLOR_TEXT : COLOR_TEXT_DIM;
+        tft->setTextColor(labelColor, tabColor);
         tft->drawString(tabNames[i].c_str(), xPos + (tabWidth / 2), (MENU_HEIGHT / 2) - 2);
     }
 

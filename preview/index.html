@@ -6,21 +6,21 @@
   <title>480x320 Touchscreen UI Preview</title>
   <style>
     :root {
-      --bg: #121820;
-      --surface: #1e2838;
-      --tab-idle: #323c50;
-      --tab-active: #0a8a7a;
-      --accent: #20e0c8;
-      --text: #ffffff;
-      --text-dim: #9aa4b0;
-      --track: #3a4658;
-      --screen-fill: #ffb020;
-      --light-fill: #40b0ff;
-      --btn-contract: #d06028;
-      --btn-contract-pressed: #ffd080;
-      --btn-retract: #2078c8;
-      --btn-retract-pressed: #90d0ff;
-      --btn-border: #8a94a0;
+      --bg: #041322;
+      --surface: #1b2431;
+      --tab-idle: #041322;
+      --tab-active: #1b2431;
+      --accent: #f8f6f1;
+      --text: #f8f6f1;
+      --text-dim: #a9acb6;
+      --track: #646d7e;
+      --screen-fill: #f8f6f1;
+      --light-fill: #a9acb6;
+      --btn-contract: #1b2431;
+      --btn-contract-pressed: #f8f6f1;
+      --btn-retract: #646d7e;
+      --btn-retract-pressed: #f8f6f1;
+      --btn-border: #a9acb6;
     }
 
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -33,12 +33,12 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
-      background: #0b0d12;
-      color: #c8d0dc;
+      background: #041322;
+      color: #a9acb6;
       font-family: Consolas, "Courier New", monospace;
     }
 
-    h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.08em; color: #9aa4b0; margin: 0; }
+    h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.16em; color: #a9acb6; margin: 0; }
 
     #device {
       width: 480px;
@@ -47,7 +47,7 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-      border: 8px solid #1a1e26;
+      border: 8px solid #1b2431;
       border-radius: 6px;
     }
 
@@ -63,13 +63,13 @@
       align-items: center;
       justify-content: center;
       background: var(--tab-idle);
-      color: var(--text);
+      color: var(--text-dim);
       font-size: 22px;
       cursor: pointer;
       position: relative;
     }
 
-    .tab.active { background: var(--tab-active); }
+    .tab.active { background: var(--tab-active); color: var(--text); }
 
     .tab + .tab::before {
       content: "";
@@ -192,7 +192,7 @@
       height: 32px;
       margin-left: -16px;
       border-radius: 50%;
-      background: #fff;
+      background: #ffffff;
       border: 2px solid var(--screen-fill);
       box-shadow: inset 0 0 0 6px var(--screen-fill);
       pointer-events: none;
@@ -238,7 +238,7 @@
     }
 
     .hold-btn.contract .chevron {
-      border-top: 28px solid #fff;
+      border-top: 28px solid var(--text);
     }
 
     .hold-btn.retract {
@@ -247,7 +247,7 @@
     }
 
     .hold-btn.retract .chevron {
-      border-bottom: 28px solid #fff;
+      border-bottom: 28px solid var(--text);
     }
 
     .hold-btn.contract.pressed {

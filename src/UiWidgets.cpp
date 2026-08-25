@@ -195,7 +195,7 @@ bool UiWidgets::handleSliderTouch(HorizontalSlider& slider, int16_t touchX) {
 // Blits one hold-button from a sprite sized to the button.
 void UiWidgets::pushButton(const TouchButton& btn) {
     const uint16_t bg = btn.pressed ? btn.pressedColor : btn.color;
-    const uint16_t fg = btn.pressed ? COLOR_BG : COLOR_TEXT;
+    const uint16_t fg = btn.pressed ? COLOR_TEXT : COLOR_ON_DARK;
     const int16_t cx = btn.w / 2;
     const int16_t cy = (btn.h / 2) - 16;
 

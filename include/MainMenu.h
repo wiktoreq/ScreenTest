@@ -1,41 +1,46 @@
 #pragma once
 #include <TFT_eSPI.h>
-#include "Config.h"
+#include "Screen.h"
+#include "UiWidgets.h"
 
-struct VerticalSlider {
-    int16_t x;
-    int16_t yMin;
-    int16_t yMax;
-    int16_t knobY;
-    int16_t oldKnobY;    // New: Tracks previous position to erase trails
-    uint8_t radius;
-    uint8_t value;
-    const char* label;
-};
-
-class MainMenu {
+class MainMenu : public Screen {
 private:
     TFT_eSPI* tft;
-    TFT_eSprite knobSprite; // Tiny sprite just for the moving knob
+    HorizontalSlider screenSlider;
+    HorizontalSlider lightSlider;
 
-    VerticalSlider posSlider;
-    VerticalSlider speedSlider;
+    enum DragTarget {
+        DRAG_NONE = 0,
+        DRAG_SCREEN = 1,
+        DRAG_LIGHT = 2
+    };
+    DragTarget dragTarget;
 
-    void drawStaticBackground();
-    void renderKnobSprite();
-    void updateSliderVisuals(VerticalSlider& slider);
-    void updateSliderValueText(const VerticalSlider& slider);
+    // Fills slider geometry for the two stacked brightness cards.
+    void layoutSliders();
+
+    // Paints one brightness card including icon, title, and slider.
+    void drawBrightnessCard(const HorizontalSlider& slider, bool isScreen);
 
 public:
-    // We no longer need the contentSprite pointer
+    // Binds this menu to the shared TFT driver.
     MainMenu(TFT_eSPI* tftInstance);
-    ~MainMenu();
 
-    void init();
-    void draw(); // Renders the initial screen state
-    
-    void handleTouch(int16_t touchX, int16_t touchY);
+    // Sets default brightness values and card layout.
+    void init() override;
 
-    uint8_t getPosition() const { return posSlider.value; }
-    uint8_t getSpeed() const { return speedSlider.value; }
+    // Draws both brightness cards into the content area.
+    void draw() override;
+
+    // Drags the screen or external-light slider from a content-area touch.
+    void handleTouch(int16_t touchX, int16_t touchY) override;
+
+    // Clears the active slider drag when the finger lifts.
+    void handleRelease() override;
+
+    // Returns the current screen-brightness value (0-100).
+    uint8_t getScreenBrightness() const { return screenSlider.value; }
+
+    // Returns the current external-light brightness value (0-100).
+    uint8_t getLightBrightness() const { return lightSlider.value; }
 };

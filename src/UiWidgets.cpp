@@ -19,13 +19,23 @@ TFT_eSprite* UiWidgets::createSprite(int16_t width, int16_t height, const char* 
     return sprite;
 }
 
-// Allocates the shared slider and percent sprites (call once from setup).
+// Converts a 0-100 slider value to the knob's screen-center X.
+int16_t UiWidgets::knobCenterX(const HorizontalSlider& slider, uint8_t value) {
+    return slider.trackX + map(value, 0, 100, 0, slider.trackW);
+}
+
+// Restores the sprite drawing window after a cropped pushSprite.
+void UiWidgets::resetSpriteWindow() {
+    sliderSprite->setWindow(0, 0, SLIDER_STRIP_W - 1, SLIDER_STRIP_H - 1);
+}
+
+// Allocates the shared slider-strip and percent sprites (call once from setup).
 void UiWidgets::init(TFT_eSPI* tft) {
     if (display != nullptr) {
         return;
     }
     display = tft;
-    sliderSprite = createSprite(SLIDER_SPRITE_W, SLIDER_SPRITE_H, "slider");
+    sliderSprite = createSprite(SLIDER_STRIP_W, SLIDER_STRIP_H, "slider");
     valueSprite = createSprite(VALUE_SPRITE_W, VALUE_SPRITE_H, "value");
 }
 
@@ -66,7 +76,7 @@ void UiWidgets::drawLampIcon(TFT_eSPI* tft, int16_t cx, int16_t cy, uint16_t col
     tft->drawFastHLine(cx - 6, cy + 13, 12, color);
 }
 
-// Draws the static slider title; the moving track is blitted separately.
+// Draws the static slider title; the moving knob is blitted separately.
 void UiWidgets::drawSliderLabel(TFT_eSPI* tft, const HorizontalSlider& slider) {
     if (slider.label == nullptr) {
         return;
@@ -78,35 +88,74 @@ void UiWidgets::drawSliderLabel(TFT_eSPI* tft, const HorizontalSlider& slider) {
     tft->unloadFont();
 }
 
-// Blits the slider track, fill, and knob from a sprite (no background redraw).
-void UiWidgets::pushSlider(const HorizontalSlider& slider) {
-    const int16_t spriteH = SLIDER_SPRITE_H;
-    const int16_t trackX = slider.knobRadius;
-    const int16_t trackY = (spriteH - slider.trackH) / 2;
+// Draws the static track and fill (no knob) as part of the screen chrome.
+void UiWidgets::drawStaticTrack(TFT_eSPI* tft, const HorizontalSlider& slider) {
     const int16_t radius = slider.trackH / 2;
-
-    sliderSprite->fillSprite(COLOR_SURFACE);
-    sliderSprite->fillRoundRect(trackX, trackY, slider.trackW, slider.trackH, radius, COLOR_TRACK);
+    tft->fillRoundRect(slider.trackX, slider.trackY, slider.trackW, slider.trackH,
+                       radius, COLOR_TRACK);
 
     int16_t fillW = map(slider.value, 0, 100, 0, slider.trackW);
     if (fillW < slider.trackH) {
         fillW = (slider.value == 0) ? 0 : slider.trackH;
     }
     if (fillW > 0) {
-        sliderSprite->fillRoundRect(trackX, trackY, fillW, slider.trackH, radius, slider.fillColor);
+        tft->fillRoundRect(slider.trackX, slider.trackY, fillW, slider.trackH,
+                           radius, slider.fillColor);
+    }
+}
+
+// Blits the knob (and, on a drag, the dirty track under it) from a RAM sprite.
+void UiWidgets::pushSlider(const HorizontalSlider& slider, bool fullBlit) {
+    const int16_t newX = knobCenterX(slider, slider.value);
+    const int16_t oldX = knobCenterX(slider, slider.oldValue);
+    const int16_t pad = slider.knobRadius + 1;
+
+    int16_t left;
+    int16_t right;
+    if (fullBlit) {
+        left = slider.trackX - pad;
+        right = slider.trackX + slider.trackW + pad;
+    } else {
+        left = min(oldX, newX) - pad;
+        right = max(oldX, newX) + pad;
     }
 
-    int16_t knobX = trackX + map(slider.value, 0, 100, 0, slider.trackW);
-    knobX = constrain(knobX, trackX, trackX + slider.trackW);
-    const int16_t knobY = spriteH / 2;
+    int16_t width = right - left;
+    if (width < KNOB_SPRITE) {
+        width = KNOB_SPRITE;
+        left = newX - pad;
+        right = left + width;
+    }
+    if (width > SLIDER_STRIP_W) {
+        width = SLIDER_STRIP_W;
+        left = slider.trackX - pad;
+    }
 
+    const int16_t height = SLIDER_STRIP_H;
+    const int16_t trackY = (height - slider.trackH) / 2;
+    const int16_t trackInX = slider.trackX - left;
+
+    resetSpriteWindow();
+    sliderSprite->fillRect(0, 0, width, height, COLOR_SURFACE);
+    sliderSprite->fillRect(trackInX, trackY, slider.trackW, slider.trackH, COLOR_TRACK);
+
+    int16_t fillW = map(slider.value, 0, 100, 0, slider.trackW);
+    if (fillW < slider.trackH) {
+        fillW = (slider.value == 0) ? 0 : slider.trackH;
+    }
+    if (fillW > 0) {
+        sliderSprite->fillRect(trackInX, trackY, fillW, slider.trackH, slider.fillColor);
+    }
+
+    const int16_t knobX = newX - left;
+    const int16_t knobY = height / 2;
     sliderSprite->fillCircle(knobX, knobY, slider.knobRadius, COLOR_KNOB);
     sliderSprite->drawCircle(knobX, knobY, slider.knobRadius, slider.fillColor);
     sliderSprite->fillCircle(knobX, knobY, 6, slider.fillColor);
 
-    const int16_t screenX = slider.trackX - slider.knobRadius;
-    const int16_t screenY = slider.trackY + (slider.trackH / 2) - (spriteH / 2);
-    sliderSprite->pushSprite(screenX, screenY);
+    const int16_t screenY = slider.trackY + (slider.trackH / 2) - (height / 2);
+    sliderSprite->pushSprite(left, screenY, 0, 0, width, height);
+    resetSpriteWindow();
 }
 
 // Blits the percent readout from a sprite over the reserved value slot.

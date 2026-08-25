@@ -65,7 +65,8 @@ void ActuatorMenu::draw() {
     UiWidgets::drawCard(tft, speedSlider.cardX, speedSlider.cardY,
                         speedSlider.cardW, speedSlider.cardH);
     UiWidgets::drawSliderLabel(tft, speedSlider);
-    UiWidgets::pushSlider(speedSlider);
+    UiWidgets::drawStaticTrack(tft, speedSlider);
+    UiWidgets::pushSlider(speedSlider, false);
     UiWidgets::pushValue(speedSlider);
 
     contractBtn.pressed = false;
@@ -91,7 +92,7 @@ void ActuatorMenu::handleTouch(int16_t touchX, int16_t touchY) {
 
     if (dragTarget == DRAG_SPEED) {
         if (UiWidgets::handleSliderTouch(speedSlider, touchX)) {
-            UiWidgets::pushSlider(speedSlider);
+            UiWidgets::pushSlider(speedSlider, false);
             UiWidgets::pushValue(speedSlider);
         }
         return;

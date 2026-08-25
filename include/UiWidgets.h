@@ -39,7 +39,7 @@ struct TouchButton {
 
 class UiWidgets {
 public:
-    // Allocates the shared slider and percent sprites (call once from setup).
+    // Allocates the shared slider-strip and percent sprites (call once from setup).
     static void init(TFT_eSPI* tft);
 
     // Returns true when a point lies inside the given rectangle.
@@ -57,11 +57,14 @@ public:
     // Draws a small lamp glyph used as the external-light icon.
     static void drawLampIcon(TFT_eSPI* tft, int16_t cx, int16_t cy, uint16_t color);
 
-    // Draws the static slider title; the moving track is blitted separately.
+    // Draws the static slider title; the moving knob is blitted separately.
     static void drawSliderLabel(TFT_eSPI* tft, const HorizontalSlider& slider);
 
-    // Blits the slider track, fill, and knob from a sprite (no background redraw).
-    static void pushSlider(const HorizontalSlider& slider);
+    // Draws the static track and fill (no knob) as part of the screen chrome.
+    static void drawStaticTrack(TFT_eSPI* tft, const HorizontalSlider& slider);
+
+    // Blits the knob (and, on a drag, the dirty track under it) from a RAM sprite.
+    static void pushSlider(const HorizontalSlider& slider, bool fullBlit);
 
     // Blits the percent readout from a sprite over the reserved value slot.
     static void pushValue(const HorizontalSlider& slider);
@@ -82,4 +85,10 @@ private:
 
     // Creates one 16-bit sprite or halts if RAM cannot be allocated.
     static TFT_eSprite* createSprite(int16_t width, int16_t height, const char* name);
+
+    // Converts a 0-100 slider value to the knob's screen-center X.
+    static int16_t knobCenterX(const HorizontalSlider& slider, uint8_t value);
+
+    // Restores the sprite drawing window after a cropped pushSprite.
+    static void resetSpriteWindow();
 };

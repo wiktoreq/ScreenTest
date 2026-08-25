@@ -51,6 +51,7 @@ void MainMenu::drawBrightnessChrome(const HorizontalSlider& slider, bool isScree
     }
 
     UiWidgets::drawSliderLabel(tft, slider);
+    UiWidgets::drawStaticTrack(tft, slider);
 }
 
 // Sets default brightness values and card layout.
@@ -68,9 +69,9 @@ void MainMenu::draw() {
     UiWidgets::clearContent(tft);
     drawBrightnessChrome(screenSlider, true);
     drawBrightnessChrome(lightSlider, false);
-    UiWidgets::pushSlider(screenSlider);
+    UiWidgets::pushSlider(screenSlider, false);
     UiWidgets::pushValue(screenSlider);
-    UiWidgets::pushSlider(lightSlider);
+    UiWidgets::pushSlider(lightSlider, false);
     UiWidgets::pushValue(lightSlider);
 }
 
@@ -90,7 +91,7 @@ void MainMenu::handleTouch(int16_t touchX, int16_t touchY) {
 
     HorizontalSlider* slider = (dragTarget == DRAG_SCREEN) ? &screenSlider : &lightSlider;
     if (UiWidgets::handleSliderTouch(*slider, touchX)) {
-        UiWidgets::pushSlider(*slider);
+        UiWidgets::pushSlider(*slider, false);
         UiWidgets::pushValue(*slider);
     }
 }

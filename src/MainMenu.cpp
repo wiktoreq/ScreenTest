@@ -21,6 +21,7 @@ void MainMenu::layoutSliders() {
     screenSlider.trackH = trackH;
     screenSlider.knobRadius = SLIDER_KNOB_R;
     screenSlider.label = "SCREEN";
+    screenSlider.labelX = PAD + 44;
     screenSlider.fillColor = COLOR_SCREEN_FILL;
 
     lightSlider.cardX = PAD;
@@ -33,6 +34,7 @@ void MainMenu::layoutSliders() {
     lightSlider.trackH = trackH;
     lightSlider.knobRadius = SLIDER_KNOB_R;
     lightSlider.label = "LIGHT";
+    lightSlider.labelX = PAD + 44;
     lightSlider.fillColor = COLOR_LIGHT_FILL;
 }
 

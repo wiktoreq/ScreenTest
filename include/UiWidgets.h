@@ -21,6 +21,7 @@ struct HorizontalSlider {
     uint8_t value;
     uint8_t oldValue;
     const char* label;
+    int16_t labelX;
     uint16_t fillColor;
 };
 

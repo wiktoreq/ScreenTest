@@ -83,7 +83,7 @@ void UiWidgets::drawSlider(TFT_eSPI* tft, const HorizontalSlider& slider, bool d
         tft->loadFont(consolab24);
         tft->setTextDatum(TL_DATUM);
         tft->setTextColor(COLOR_TEXT, COLOR_SURFACE);
-        tft->drawString(slider.label, slider.cardX + 44, slider.cardY + 12);
+        tft->drawString(slider.label, slider.labelX, slider.cardY + 12);
         tft->unloadFont();
     }
 }

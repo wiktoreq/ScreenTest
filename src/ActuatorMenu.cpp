@@ -19,6 +19,7 @@ void ActuatorMenu::layoutControls() {
     speedSlider.trackH = SLIDER_TRACK_H;
     speedSlider.knobRadius = SLIDER_KNOB_R;
     speedSlider.label = "SPEED";
+    speedSlider.labelX = PAD + 16;
     speedSlider.fillColor = COLOR_ACCENT;
 
     contractBtn.x = PAD;

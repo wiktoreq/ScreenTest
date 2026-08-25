@@ -28,12 +28,11 @@ constexpr int16_t ACT_BTN_Y         = CONTENT_Y + PAD + ACT_SLIDER_CARD_H + GAP;
 constexpr int16_t ACT_BTN_H         = (CONTENT_Y + CONTENT_H) - PAD - ACT_BTN_Y;
 constexpr int16_t ACT_BTN_W         = (TFT_W - PAD * 2 - GAP) / 2;
 
-// Sprite sizes: a slider strip (dirty-rect blits) plus percent text
+// Object-sized sprites: each buffer is only as large as the widget it paints
 constexpr int16_t KNOB_SPRITE     = (SLIDER_KNOB_R * 2) + 2;
-constexpr int16_t SLIDER_STRIP_W  = 452; // track (420) + knob overhang
-constexpr int16_t SLIDER_STRIP_H  = KNOB_SPRITE;
-constexpr int16_t VALUE_SPRITE_W  = 72;
-constexpr int16_t VALUE_SPRITE_H  = 32;
+constexpr uint16_t KNOB_CHROMA    = 0xF81F; // magenta key, unused in the UI
+constexpr int16_t VALUE_SPRITE_W  = 56;     // fits "100%" in font 4
+constexpr int16_t VALUE_SPRITE_H  = 26;
 
 // Palette (RGB565). Hex comments are the intended 24-bit colors.
 constexpr uint16_t COLOR_BG           = 0x10C4; // #121820

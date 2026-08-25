@@ -47,7 +47,7 @@ void ActuatorMenu::layoutControls() {
 void ActuatorMenu::setButtonPressed(TouchButton& btn, bool pressed) {
     if (btn.pressed == pressed) return;
     btn.pressed = pressed;
-    UiWidgets::drawButton(tft, btn);
+    UiWidgets::pushButton(btn);
 }
 
 // Sets default speed and lays out the speed slider plus action buttons.
@@ -66,13 +66,13 @@ void ActuatorMenu::draw() {
                         speedSlider.cardW, speedSlider.cardH);
     UiWidgets::drawSliderLabel(tft, speedSlider);
     UiWidgets::drawStaticTrack(tft, speedSlider);
-    UiWidgets::pushSlider(speedSlider, false);
+    UiWidgets::pushKnob(speedSlider);
     UiWidgets::pushValue(speedSlider);
 
     contractBtn.pressed = false;
     retractBtn.pressed = false;
-    UiWidgets::drawButton(tft, contractBtn);
-    UiWidgets::drawButton(tft, retractBtn);
+    UiWidgets::pushButton(contractBtn);
+    UiWidgets::pushButton(retractBtn);
 }
 
 // Routes a touch to the speed slider or to one of the two hold-buttons.
@@ -92,7 +92,7 @@ void ActuatorMenu::handleTouch(int16_t touchX, int16_t touchY) {
 
     if (dragTarget == DRAG_SPEED) {
         if (UiWidgets::handleSliderTouch(speedSlider, touchX)) {
-            UiWidgets::pushSlider(speedSlider, false);
+            UiWidgets::updateSlider(speedSlider);
             UiWidgets::pushValue(speedSlider);
         }
         return;
